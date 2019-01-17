@@ -18,7 +18,7 @@ public class RestManager {
 	}
 
 	// new client(s) show up
-	public void onArrive(ClientsGroup group) throws Exception {
+	synchronized public void onArrive(ClientsGroup group) throws Exception {
 		if (lookup(group) == null) {
 			Table table = findSuitableTableForGroup(group);
 			if (table == null) {
@@ -32,7 +32,7 @@ public class RestManager {
 	}
 
 	// client(s) leave, either served or simply abandoning the queue
-	public void onLeave(ClientsGroup group) throws Exception {
+	synchronized public void onLeave(ClientsGroup group) throws Exception {
 		Table table = lookup(group);
 		if (table != null) {
 			table.setGroupOccupied(null);
