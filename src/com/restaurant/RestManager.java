@@ -13,7 +13,8 @@ public class RestManager {
 		if (tables == null) {
 			throw new RuntimeException("Tables can't be null");
 		}
-		this.tables = tables;
+		this.tables = new ArrayList<>(tables);
+		this.tables.sort((a, b) -> a.getSize() - b.getSize());
 		this.waitingGroups = new LinkedList<>();
 	}
 
@@ -116,9 +117,9 @@ public class RestManager {
 	
 	public static void main(String[] args) throws Exception {
 		List<Table> tables = new ArrayList<Table>();
-		tables.add(new Table(2));
 		tables.add(new Table(4));
 		tables.add(new Table(6));
+		tables.add(new Table(2));
 		
 		RestManager manager = new RestManager(tables);
 		
