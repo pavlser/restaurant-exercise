@@ -8,13 +8,13 @@ public class ClientsGroup {
 		this.size = size;
 	}
 	
-	public int getSize() {
+	public Integer getSize() {
 		return this.size;
 	}
 	
 	@Override
 	public String toString() {
-		return "Group size: " + size;
+		return "Group: " + size;
 	}
 
 }

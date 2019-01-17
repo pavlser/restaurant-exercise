@@ -36,7 +36,7 @@ public class RestManager {
 	synchronized public void onLeave(ClientsGroup group) throws Exception {
 		Table table = lookup(group);
 		if (table != null) {
-			table.setGroupOccupied(null);
+			table.removeGroup(group);
 			tryToSitNextGroup();
 		} else {
 			if (lookupWaitingGroup(group) != null) {
@@ -50,7 +50,7 @@ public class RestManager {
 	public Table lookup(ClientsGroup group) {
 		Table res = null;
 		for (Table table : tables) {
-			if (table.getGroupOccupied() == group) {
+			if (table.hasGroup(group)) {
 				res = table;
 				break;
 			}
@@ -78,19 +78,30 @@ public class RestManager {
 	}
 	
 	private Table findSuitableTableForGroup(ClientsGroup group) {
-		Table res = null;
+		Table result = null;
+		Table emptyTable = null;
+		Table canBeSharedTable = null;
 		for (Table table : tables) {
-			if (table.isFree() && table.getSize() == group.getSize()) {
-				res = table;
-				break;
+			if (table.hasFreeSpaceForGroupSize(group.getSize())) {
+				if (table.isEmpty()) {
+					emptyTable = table; // we found first empty table - take it and return
+					break;
+				} else if (canBeSharedTable == null) {
+					canBeSharedTable = table; // remember first table with enough space and continue search for free table
+				}
 			}
 		}
-		return res;
+		if (emptyTable != null) {
+			result = emptyTable;
+		} else if (canBeSharedTable != null) {
+			result = canBeSharedTable;
+		}
+		return result;
 	}
 	
 	private void sitGroupAtTheTable(Table table, ClientsGroup group) throws Exception {
-		if (table.isFree()) {
-			table.setGroupOccupied(group);
+		if (table.hasFreeSpaceForGroupSize(group.getSize())) {
+			table.sitGroup(group);
 		} else {
 			throw new Exception("Can't sit group at table: the table is occupied");
 		}
@@ -125,6 +136,7 @@ public class RestManager {
 		
 		ClientsGroup group2_1 = new ClientsGroup(2);
 		ClientsGroup group2_2 = new ClientsGroup(2);
+		ClientsGroup group2_3 = new ClientsGroup(2);
 		ClientsGroup group4_1 = new ClientsGroup(4);
 		ClientsGroup group4_2 = new ClientsGroup(4);
 		ClientsGroup group6_1 = new ClientsGroup(6);
@@ -147,6 +159,10 @@ public class RestManager {
 		
 		out("\nArrive group 4(2): " + group4_2);
 		manager.onArrive(group4_2);
+		manager.printStatus();
+		
+		out("\nArrive group 2(3): " + group2_3);
+		manager.onArrive(group2_3);
 		manager.printStatus();
 		
 		out("\nArrive group 6(1): " + group6_1);
@@ -175,6 +191,14 @@ public class RestManager {
 		
 		out("\nLeave group 6(2): " + group6_2);
 		manager.onLeave(group6_2);
+		manager.printStatus();
+		
+		out("\nLeave group 2(2): " + group2_2);
+		manager.onLeave(group2_2);
+		manager.printStatus();
+		
+		out("\nLeave group 2(3): " + group2_3);
+		manager.onLeave(group2_3);
 		manager.printStatus();
 	}
 }
